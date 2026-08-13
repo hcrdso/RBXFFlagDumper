@@ -51,14 +51,7 @@ Launch Roblox – Open any experience and let the client fully load.
 
 Run the dumper – Execute the compiled RBXFFlagDumper.exe.
 
-View the output – The tool will attach to the Roblox process, scan memory for FFlag structures, and print all flags with their current boolean/numeric values to the console.
-
-Example output snippet:
-
-FFlag::DebugPhysicsEnabled = true
-FFlag::NewRenderingPipeline = false
-FFlag::EnableExperimentalUI = true
-...
+Open the .hpp file.
 
 ---
 
@@ -68,6 +61,8 @@ Windows API – Used for process enumeration, opening handles, and ReadProcessMe
 C++ Standard Library – For strings, containers, and I/O.
 
 No third‑party libraries are required – the tool is completely self‑contained.
+
+---
 
 ##Contributing
 Contributions are highly appreciated! Whether it’s a bug fix, performance improvement, or new feature:
