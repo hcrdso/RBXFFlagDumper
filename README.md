@@ -42,7 +42,9 @@ Locate the executable
 
 The output .exe will be placed in the standard Visual Studio output folder (e.g., x64\Release\).
 
-##Usage
+---
+
+## Usage
 Important: This tool reads the memory of a running Roblox process. Ensure you have the necessary system permissions and are fully aware of Roblox’s Terms of Service. Use only for educational and research purposes.
 
 Launch Roblox – Open any experience and let the client fully load.
@@ -57,6 +59,9 @@ FFlag::DebugPhysicsEnabled = true
 FFlag::NewRenderingPipeline = false
 FFlag::EnableExperimentalUI = true
 ...
+
+---
+
 ## Dependencies
 Windows API – Used for process enumeration, opening handles, and ReadProcessMemory.
 
