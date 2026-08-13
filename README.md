@@ -42,7 +42,7 @@ Locate the executable
 
 The output .exe will be placed in the standard Visual Studio output folder (e.g., x64\Release\).
 
-Usage
+##Usage
 Important: This tool reads the memory of a running Roblox process. Ensure you have the necessary system permissions and are fully aware of Roblox’s Terms of Service. Use only for educational and research purposes.
 
 Launch Roblox – Open any experience and let the client fully load.
@@ -57,14 +57,14 @@ FFlag::DebugPhysicsEnabled = true
 FFlag::NewRenderingPipeline = false
 FFlag::EnableExperimentalUI = true
 ...
-Dependencies
+## Dependencies
 Windows API – Used for process enumeration, opening handles, and ReadProcessMemory.
 
 C++ Standard Library – For strings, containers, and I/O.
 
 No third‑party libraries are required – the tool is completely self‑contained.
 
-Contributing
+##Contributing
 Contributions are highly appreciated! Whether it’s a bug fix, performance improvement, or new feature:
 
 Open an issue – Discuss your idea or report a problem.
@@ -75,8 +75,12 @@ Submit a pull request – Provide a clear description of your changes and why th
 
 Please maintain the existing code style and include comments where necessary.
 
-License
+---
+
+## License
 This project is licensed under the MIT License – see the LICENSE file for full details.
 
-Disclaimer
+---
+
+## Disclaimer
 This tool is not affiliated with, endorsed by, or sponsored by Roblox Corporation. It is provided as‑is for educational and research purposes only. The authors assume no liability for any misuse, account restrictions, or violations of Roblox’s Terms of Service that may result from using this software. Use at your own risk.
