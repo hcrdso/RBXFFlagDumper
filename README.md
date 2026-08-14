@@ -64,7 +64,7 @@ No third‑party libraries are required – the tool is completely self‑contai
 
 ---
 
-##Contributing
+## Contributing
 Contributions are highly appreciated! Whether it’s a bug fix, performance improvement, or new feature:
 
 Open an issue – Discuss your idea or report a problem.
