@@ -114,8 +114,6 @@ int main() {
 		}
 	}
 
-	//std::cout << "magic " << std::dec << Hits << "  cands " << Pool.size() << "\n";
-
 	if (Pool.empty()) {
 		std::cout << "[-] no chain matched\n";
 		getchar();
@@ -162,8 +160,6 @@ int main() {
 	uintptr_t Cur = Hd;
 
 	std::ofstream Hpp("FFlags.hpp");
-	//std::ofstream Js("FFlags.json");
-	//std::ofstream Txt("FFlags.txt");
 	bool First = true;
 
 	Hpp << "// FFlags dumper made by hcrdso\n";
@@ -175,23 +171,6 @@ int main() {
 	Hpp << "    uintptr_t ValueGetSet = 0x" << std::uppercase << std::hex << offsets::Vgs << ";\n";
 	Hpp << "    uintptr_t FlagToValue = 0x" << std::uppercase << std::hex << offsets::Ftv << ";\n";
 	Hpp << "}\n\nnamespace FFlags\n{\n";
-
-	/*Js << "{\n";
-	Js << "    \"_by\": \"urmom\",\n";
-	Js << "    \"FFlagOffsets\": {\n";
-	Js << "        \"FFlagList\":   \"0x" << std::uppercase << std::hex << offsets::List << "\",\n";
-	Js << "        \"HeadPointer\": \"0x" << std::uppercase << std::hex << offsets::Head << "\",\n";
-	Js << "        \"ValueGetSet\": \"0x" << std::uppercase << std::hex << offsets::Vgs << "\",\n";
-	Js << "        \"FlagToValue\": \"0x" << std::uppercase << std::hex << offsets::Ftv << "\"\n";
-	Js << "    },\n    \"FFlags\": {\n";*/
-
-	/*Txt << "FFlagOffsets\n";
-	Txt << "FFlagList: 0x" << std::uppercase << std::hex << offsets::List << "\n";
-	Txt << "HeadPointer: 0x" << offsets::Head << "\n";
-	Txt << "ValueGetSet: 0x" << offsets::Vgs << "\n";
-	Txt << "FlagToValue: 0x" << offsets::Ftv << "\n\n";
-
-	Txt << "FFlags\n";*/
 
 	std::set<uintptr_t> Seen;
 	int D = 0;
@@ -217,9 +196,6 @@ int main() {
 				for ( auto& c : Nm ) if ( !isalnum( ( unsigned char )c ) ) c = '_';
 
 				Hpp << "    uintptr_t " << Nm << " = 0x" << std::uppercase << std::hex << Rv << ";\n";
-				//if (!First) Js << ",\n"; else First = false;
-				//Js << "        \"" << Nm << "\": \"0x" << std::uppercase << std::hex << Rv << "\"";
-				//Txt << Nm << " = 0x" << std::uppercase << std::hex << Rv << "\n";
 				D++;
 			}
 		}
@@ -229,11 +205,8 @@ int main() {
 		Cur = Nx;
 	}
 
-	//Js << "\n    }\n}";
 	Hpp << "}\n";
 	Hpp.close();
-	//Js.close();
-	//Txt.close();
 
 	auto T1 = std::chrono::high_resolution_clock::now();
 	auto Ms = std::chrono::duration_cast<std::chrono::milliseconds>(T1 - T0);
