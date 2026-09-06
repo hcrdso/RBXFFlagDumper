@@ -6,6 +6,13 @@
 #include <Windows.h>
 #include <TlHelp32.h>
 
+#ifdef max
+#undef max
+#endif
+#ifdef min
+#undef min
+#endif
+
 #include <cctype>
 #include <cstdint>
 #include <limits>
@@ -116,7 +123,7 @@ public:
             return false;
 
         if (!is_plausible_user_address(addr) ||
-            size > std::numeric_limits<SIZE_T>::max() - addr)
+            size > (std::numeric_limits<SIZE_T>::max)() - addr)
             return false;
 
         SIZE_T bytesRead = 0;
@@ -162,13 +169,13 @@ public:
         const uintptr_t regionBase =
             reinterpret_cast<uintptr_t>(mbi.BaseAddress);
 
-        if (regionBase > std::numeric_limits<uintptr_t>::max() - mbi.RegionSize)
+        if (regionBase > (std::numeric_limits<uintptr_t>::max)() - mbi.RegionSize)
             return false;
 
         const uintptr_t regionEnd =
             regionBase + static_cast<uintptr_t>(mbi.RegionSize);
 
-        if (addr > std::numeric_limits<uintptr_t>::max() - size)
+        if (addr > (std::numeric_limits<uintptr_t>::max)() - size)
             return false;
 
         return addr >= regionBase &&
@@ -201,7 +208,7 @@ public:
                 static_cast<uintptr_t>(mbi.RegionSize);
 
             if (regionSize == 0 ||
-                regionBase > std::numeric_limits<uintptr_t>::max() - regionSize)
+                regionBase > (std::numeric_limits<uintptr_t>::max)() - regionSize)
                 break;
 
             const uintptr_t regionEnd = regionBase + regionSize;
@@ -225,11 +232,12 @@ public:
 
             current = regionEnd;
         }
+
         return result;
     }
 
     std::string readstring(uintptr_t addr, size_t maxLength = 4096) const {
-        if (addr > std::numeric_limits<uintptr_t>::max() - 0x18)
+        if (addr > (std::numeric_limits<uintptr_t>::max)() - 0x18)
             return {};
 
         const auto lenOpt = vm_read<int32_t>(addr + 0x18);
@@ -278,6 +286,7 @@ public:
             if (!std::isalnum(c) && c != '_')
                 return false;
         }
+
         return true;
     }
 
