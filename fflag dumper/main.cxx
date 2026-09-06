@@ -20,7 +20,7 @@ struct Candidate {
 };
 
 bool checked_add(uintptr_t lhs, uintptr_t rhs, uintptr_t& result) {
-    if (lhs > std::numeric_limits<uintptr_t>::max() - rhs)
+    if (lhs > (std::numeric_limits<uintptr_t>::max)() - rhs)
         return false;
     result = lhs + rhs;
     return true;
@@ -42,7 +42,7 @@ bool is_reasonable_value(const std::string& value) {
         if (c == '\0')
             break;
 
-        // Accept normal printable ASCII plus common UTF-8 bytes
+        // Accept normal printable ASCII plus common UTF-8 bytes.
         if (c < 0x20 && c != '\t')
             return false;
     }
@@ -101,7 +101,7 @@ int sniff_ftv(uintptr_t start, uintptr_t valueGetSetOffset, uintptr_t moduleBase
     seenNodes.reserve(512);
 
     // The offset is generally small, so checking 8-byte aligned candidates
-    // is cheap compared with scanning the process for the list itself
+    // is cheap compared with scanning the process for the list itself.
     for (uintptr_t offset = 0; offset < kMaxFtvOffset; offset += sizeof(uintptr_t)) {
         seenNodes.clear();
 
@@ -183,7 +183,7 @@ std::string sanitize_identifier(std::string name) {
 
     // Prefixing every generated identifier also avoids collisions with
     // C++ keywords and names such as "__..." that are reserved to the
-    // implementation
+    // implementation.
     return "FFlag_" + name;
 }
 
@@ -202,7 +202,7 @@ std::string make_unique_identifier(
             return candidate;
     }
 
-    // Practically unreachable, but keeps the function total
+    // Practically unreachable, but keeps the function total.
     return name + "_duplicate";
 }
 
@@ -223,14 +223,14 @@ int main() {
 
     const DWORD pid = driver.vm_getpid(kRobloxProcessName);
     if (pid == 0) {
-        std::cerr << "[-] RobloxPlayerBeta.exe was not found\n";
+        std::cerr << "[-] RobloxPlayerBeta.exe was not found.\n";
         wait_for_enter();
         return 1;
     }
 
     if (!driver.vm_attach(pid)) {
         std::cerr << "[-] Failed to open Roblox process (PID " << pid
-                  << "). Try running the dumper with sufficient permissions\n"
+                  << "). Try running the dumper with sufficient permissions.\n"
                   << "    Windows error: " << GetLastError() << "\n";
         wait_for_enter();
         return 1;
@@ -238,7 +238,7 @@ int main() {
 
     const uintptr_t base = driver.vm_getmodulebase(kRobloxProcessName);
     if (!Driver::is_plausible_user_address(base)) {
-        std::cerr << "[-] Failed to locate RobloxPlayerBeta.exe module base\n";
+        std::cerr << "[-] Failed to locate RobloxPlayerBeta.exe module base.\n";
         wait_for_enter();
         return 1;
     }
@@ -251,24 +251,24 @@ int main() {
         !checked_add(base, kScanEndRva, scanEnd) ||
         !checked_add(base, kMaxGeneratedRva, generatedRangeEnd) ||
         scanStart >= scanEnd) {
-        std::cerr << "[-] Invalid scan range\n";
+        std::cerr << "[-] Invalid scan range.\n";
         wait_for_enter();
         return 1;
     }
 
-    std::cout << "[+] PID  " << std::dec << pid << "\n"
-              << "[+] Base 0x" << std::hex << base << "\n\n"
-              << "[+] Discovering readable memory regions...\n";
+    std::cout << "[+] pid  " << std::dec << pid << "\n"
+              << "[+] base 0x" << std::hex << base << "\n\n"
+              << "[+] discovering readable memory regions...\n";
 
     const auto regions = driver.vm_readable_regions(scanStart, scanEnd);
     if (regions.empty()) {
-        std::cerr << "[-] No readable memory regions were found in the scan range\n";
+        std::cerr << "[-] No readable memory regions were found in the scan range.\n";
         wait_for_enter();
         return 1;
     }
 
     // These are intentionally small candidate sets. The actual list/field
-    // layout is discovered at runtime instead of being hard-coded to one build
+    // layout is discovered at runtime instead of being hard-coded to one build.
     constexpr uintptr_t kHeadOffsets[] = {
         0x8, 0x10, 0x18, 0x20
     };
@@ -296,7 +296,7 @@ int main() {
         if (!checked_add(region.base, static_cast<uintptr_t>(region.size), regionEnd))
             continue;
 
-        constexpr size_t kChunkSize = 1ULL << 20; // 1 mib
+        constexpr size_t kChunkSize = 1ULL << 20; // 1 MiB
         for (uintptr_t cursor = region.base; cursor < regionEnd;) {
             const uintptr_t remaining = regionEnd - cursor;
             const size_t toRead =
@@ -380,14 +380,14 @@ int main() {
         }
     }
 
-    std::cout << "[+] Regions scanned: " << std::dec << regionsScanned << "\n"
-              << "[+] Pointer slots:  " << pointerSlotsScanned << "\n"
-              << "[+] Object markers: " << objectMarkersFound << "\n"
-              << "[+] Viable layouts: " << candidates.size() << "\n";
+    std::cout << "[+] regions scanned: " << std::dec << regionsScanned << "\n"
+              << "[+] pointer slots:  " << pointerSlotsScanned << "\n"
+              << "[+] object markers: " << objectMarkersFound << "\n"
+              << "[+] viable layouts: " << candidates.size() << "\n";
 
     if (candidates.empty()) {
-        std::cerr << "[-] No compatible FFlag layout was found\n"
-                  << "    The target's internal layout may have changed\n";
+        std::cerr << "[-] No compatible FFlag layout was found.\n"
+                  << "    The target's internal layout may have changed.\n";
         wait_for_enter();
         return 1;
     }
@@ -415,35 +415,35 @@ int main() {
 
     uintptr_t listAddress = 0;
     if (!checked_add(base, picked.rva, listAddress)) {
-        std::cerr << "[-] Selected list address overflowed\n";
+        std::cerr << "[-] Selected list address overflowed.\n";
         wait_for_enter();
         return 1;
     }
 
     const auto listObject = read_ptr(listAddress);
     if (!listObject) {
-        std::cerr << "[-] Selected list pointer could not be read\n";
+        std::cerr << "[-] Selected list pointer could not be read.\n";
         wait_for_enter();
         return 1;
     }
 
     uintptr_t headField = 0;
     if (!checked_add(*listObject, picked.headOffset, headField)) {
-        std::cerr << "[-] Selected head field address overflowed\n";
+        std::cerr << "[-] Selected head field address overflowed.\n";
         wait_for_enter();
         return 1;
     }
 
     const auto manager = read_ptr(headField);
     if (!manager) {
-        std::cerr << "[-] Selected list manager could not be read\n";
+        std::cerr << "[-] Selected list manager could not be read.\n";
         wait_for_enter();
         return 1;
     }
 
     const auto head = read_ptr(*manager);
     if (!head) {
-        std::cerr << "[-] Selected list head could not be read\n";
+        std::cerr << "[-] Selected list head could not be read.\n";
         wait_for_enter();
         return 1;
     }
@@ -452,25 +452,28 @@ int main() {
         *head, picked.valueGetSetOffset, base);
 
     if (flagToValue < 0) {
-        std::cerr << "[-] Failed to identify the flag-to-value field\n";
+        std::cerr << "[-] Failed to identify the flag-to-value field.\n";
         wait_for_enter();
         return 1;
     }
 
-    std::cout << "\n[+] Layout\n"
-              << "    List  = 0x" << std::hex << picked.rva << "\n"
-              << "    Head  = 0x" << picked.headOffset << "\n"
-              << "    VGS   = 0x" << picked.valueGetSetOffset << "\n"
-              << "    FTV   = 0x" << flagToValue << "\n\n";
+    std::cout << "\n[+] layout\n"
+              << "    list  = 0x" << std::hex << picked.rva << "\n"
+              << "    head  = 0x" << picked.headOffset << "\n"
+              << "    vgs   = 0x" << picked.valueGetSetOffset << "\n"
+              << "    ftv   = 0x" << flagToValue << "\n\n";
 
     std::ofstream output("FFlags.hpp", std::ios::binary | std::ios::trunc);
     if (!output) {
-        std::cerr << "[-] Failed to create FFlags.hpp in the current directory\n";
+        std::cerr << "[-] Failed to create FFlags.hpp in the current directory.\n";
         wait_for_enter();
         return 1;
     }
 
-    output << "// Dumped by RBXFFlagDumper\n\n"
+    output << "// Generated by RBXFFlagDumper.\n"
+           << "// This file contains offsets observed in the current client.\n"
+           << "//\n"
+           << "// NOTE: Roblox internals can change without notice.\n\n"
            << "#pragma once\n"
            << "#include <cstdint>\n\n"
            << "namespace FFlagOffsets {\n"
@@ -560,11 +563,14 @@ int main() {
                 }
             }
         }
+
         if (!emitted)
             ++skipped;
+
         const auto next = read_ptr(node);
         if (!next || *next == node)
             break;
+
         node = *next;
     }
 
@@ -576,10 +582,10 @@ int main() {
         std::chrono::duration_cast<std::chrono::milliseconds>(
             endTime - startTime);
 
-    std::cout << "\n[+] Dumped " << std::dec << dumped
-              << " FFlags (" << skipped << " skipped)\n"
-              << "[+] Wrote FFlags.hpp\n"
-              << "[+] Completed in " << elapsed.count() << " ms\n"
+    std::cout << "\n[+] dumped " << std::dec << dumped
+              << " flags (" << skipped << " skipped)\n"
+              << "[+] wrote FFlags.hpp\n"
+              << "[+] completed in " << elapsed.count() << " ms\n"
               << "\nDone.\n";
 
     wait_for_enter();
