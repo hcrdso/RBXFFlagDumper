@@ -1,86 +1,108 @@
 # RBXFFlagDumper
 
-**RBXFFlagDumper** is a lightweight, low-level utility designed to extract and display **Roblox FFlags** (Feature Flags) directly from a running Roblox client process. By reading process memory in real time, it gives developers, reverse engineers, and power users an unfiltered snapshot of all active flags and their current states—bypassing the need for external debuggers or manual inspection.
+**RBXFFlagDumper** is a small Windows/x64 research utility that inspects a running Roblox client and generates a C++ header containing the discovered FFlag value offsets.
 
----
+The dumper is read-only: it opens the Roblox process with memory-query/read permissions, discovers candidate list layouts at runtime, validates the resulting chain, and writes `FFlags.hpp`.
 
-## Features
+## What changed in this version
 
-- **Real‑time Flag Extraction** – Dumps all active Roblox FFlags directly from the client’s memory space.
-- **Minimal & Efficient** – Written in pure C++ with no external dependencies; fast and lightweight.
-- **Process Memory Access** – Uses Windows API low‑level memory reading techniques to retrieve flag data reliably.
-- **Visual Studio Ready** – Includes pre‑configured `.sln` and `.vcxproj` files for one‑click compilation.
-- **Clean Output** – Formats flags in a human‑readable list for quick analysis.
+The project was hardened substantially without changing its basic purpose:
 
----
+- Runtime memory regions are discovered with `VirtualQueryEx` instead of blindly reading every address in a fixed range.
+- All `ReadProcessMemory` operations now report success/failure instead of silently returning zero-filled data.
+- Process handles use RAII and are closed reliably.
+- `PROCESS_ALL_ACCESS` and the unused write path were removed; the tool is read-only.
+- Pointer arithmetic is checked for overflow.
+- List traversal has bounded iteration and cycle detection.
+- FTV detection validates readable string values, reducing false positives.
+- Candidate layouts are deduplicated and ranked deterministically.
+- Generated C++ identifiers are sanitized, prefixed, and deduplicated.
+- The generated header uses `std::uintptr_t` and C++17 `inline constexpr` declarations.
+- The project is explicitly **x64-only**, matching the 64-bit Roblox client and preventing broken x86 builds.
+- Failure messages now explain which stage failed and include the Windows error code where useful.
 
-## Getting Started
+## Requirements
 
-### Prerequisites
+- Windows 10/11
+- Visual Studio 2022 with the **Desktop development with C++** workload
+- Windows SDK
+- An x64 Roblox client process
 
-- **Operating System** – Windows (the Roblox client runs on Windows).
-- **Compiler** – Visual Studio 2019 or later (Community edition works fine).
-- **Knowledge** – Basic C++ understanding if you intend to modify or extend the tool.
+The project uses the Visual Studio `v143` toolset and C++17.
 
-### Building from Source
+## Build
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/hcrdso/RBXFFlagDumper.git
-   cd RBXFFlagDumper
-Open the solution
+1. Open `fflag dumper.sln` in Visual Studio.
+2. Select `Release | x64` (recommended).
+3. Build with **Build → Build Solution**.
+4. Run the generated executable while the Roblox client is open.
 
-Double‑click fflag dumper.sln to launch Visual Studio.
-
-Build the project
-
-Select your desired configuration (Debug / Release) and platform (x86 / x64).
-
-Press Ctrl+Shift+B or go to Build → Build Solution.
-
-Locate the executable
-
-The output .exe will be placed in the standard Visual Studio output folder (e.g., x64\Release\).
-
----
+Only x64 configurations are included because the dumper stores and follows 64-bit process pointers.
 
 ## Usage
-Important: This tool reads the memory of a running Roblox process. Ensure you have the necessary system permissions and are fully aware of Roblox’s Terms of Service. Use only for educational and research purposes.
 
-Launch Roblox – Open any experience and let the client fully load.
+Start the Roblox client and wait until it is fully loaded. Then run the dumper.
 
-Run the dumper – Execute the compiled RBXFFlagDumper.exe.
+A successful run prints the discovered layout and creates:
 
-Open the .hpp file.
+```text
+FFlags.hpp
+```
 
----
+in the program's current working directory.
 
-## Dependencies
-Windows API – Used for process enumeration, opening handles, and ReadProcessMemory.
+The generated file has the following general form:
 
-C++ Standard Library – For strings, containers, and I/O.
+```cpp
+#pragma once
+#include <cstdint>
 
-No third‑party libraries are required – the tool is completely self‑contained.
+namespace FFlagOffsets {
+    inline constexpr std::uintptr_t FFlagList = 0x...ULL;
+    inline constexpr std::uintptr_t HeadPointer = 0x...ULL;
+    inline constexpr std::uintptr_t ValueGetSet = 0x...ULL;
+    inline constexpr std::uintptr_t FlagToValue = 0x...ULL;
+}
 
----
+namespace FFlags {
+    inline constexpr std::uintptr_t FFlag_Example = 0x...ULL;
+}
+```
 
-## Contributing
-Contributions are highly appreciated! Whether it’s a bug fix, performance improvement, or new feature:
+Roblox's internal memory layout is not stable. A build can legitimately produce no compatible layout, and that is preferable to silently emitting incorrect offsets.
 
-Open an issue – Discuss your idea or report a problem.
+## Troubleshooting
 
-Fork the repo – Create your own fork and work on a feature branch.
+**`RobloxPlayerBeta.exe was not found`**
 
-Submit a pull request – Provide a clear description of your changes and why they matter.
+Start Roblox before launching the dumper.
 
-Please maintain the existing code style and include comments where necessary.
+**`Failed to open Roblox process`**
 
----
+Check Windows permissions and security software. The program only requests process query/read access; it does not request write access.
+
+**`No compatible FFlag layout was found`**
+
+The client's internal structures may have changed. This version intentionally fails closed instead of trusting weak pointer patterns.
+
+**`Failed to identify the flag-to-value field`**
+
+The list was found, but the value representation did not match the expected string-based layout. This can also happen after an internal Roblox update.
+
+## Development notes
+
+The source intentionally keeps the runtime layout discovery logic in `main.cxx` and generic Windows process/memory helpers in:
+
+```text
+fflag dumper/process access/memory/memory.h
+```
+
+There are no third-party dependencies.
 
 ## License
-This project is licensed under the MIT License – see the LICENSE file for full details.
 
----
+This project is licensed under the MIT License. See `LICENSE`.
 
 ## Disclaimer
-This tool is not affiliated with, endorsed by, or sponsored by Roblox Corporation. It is provided as‑is for educational and research purposes only. The authors assume no liability for any misuse, account restrictions, or violations of Roblox’s Terms of Service that may result from using this software. Use at your own risk.
+
+This project is not affiliated with, endorsed by, or sponsored by Roblox Corporation. It is provided as-is for educational and research purposes. Users are responsible for complying with applicable software terms and platform rules.
